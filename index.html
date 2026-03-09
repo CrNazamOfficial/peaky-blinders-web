@@ -330,17 +330,22 @@ textarea{resize:vertical;min-height:80px;font-size:13px}
       <div style="margin-bottom:8px;font-size:9px;color:var(--gray);font-family:'IBM Plex Mono',monospace;letter-spacing:2px">— BIG OG —</div>
       <div class="members-grid" style="margin-bottom:18px">
         <div class="member-card og"><div class="member-role">Big OG</div><div class="member-name">PEYO</div></div>
-        <div class="member-card og"><div class="member-role">Big OG</div><div class="member-name">PATEM PB</div></div>
       </div>
-      <div style="margin-bottom:8px;font-size:9px;color:var(--gray);font-family:'IBM Plex Mono',monospace;letter-spacing:2px">— OG —</div>
+      <div style="margin-bottom:8px;font-size:9px;color:var(--gray);font-family:'IBM Plex Mono',monospace;letter-spacing:2px">— PATEM —</div>
       <div class="members-grid" style="margin-bottom:18px">
-        <div class="member-card"><div class="member-role">OG</div><div class="member-name">ONNZ</div></div>
-        <div class="member-card"><div class="member-role">OG</div><div class="member-name">ANNZ</div></div>
-        <div class="member-card"><div class="member-role">OG</div><div class="member-name">KEN</div></div>
-        <div class="member-card"><div class="member-role">OG</div><div class="member-name">JACK</div></div>
-        <div class="member-card"><div class="member-role">OG</div><div class="member-name">REJI</div></div>
-        <div class="member-card"><div class="member-role">OG</div><div class="member-name">SKY</div></div>
-        <div class="member-card"><div class="member-role">OG</div><div class="member-name">RAKA</div></div>
+        <div class="member-card"><div class="member-role">Patem</div><div class="member-name">ONNZ</div></div>
+        <div class="member-card"><div class="member-role">Patem</div><div class="member-name">ANNZ</div></div>
+        <div class="member-card"><div class="member-role">Patem</div><div class="member-name">KEN</div></div>
+        <div class="member-card"><div class="member-role">Patem</div><div class="member-name">JACK</div></div>
+        <div class="member-card"><div class="member-role">Patem</div><div class="member-name">REJI</div></div>
+        <div class="member-card"><div class="member-role">Patem</div><div class="member-name">SKY</div></div>
+        <div class="member-card"><div class="member-role">Patem</div><div class="member-name">RAKA</div></div>
+      </div>
+      <div style="margin-bottom:8px;font-size:9px;color:var(--gray);font-family:'IBM Plex Mono',monospace;letter-spacing:2px">— UNDER OG —</div>
+      <div class="members-grid" style="margin-bottom:18px">
+        <div class="member-card"><div class="member-role">Under OG</div><div class="member-name">ONZ</div></div>
+        <div class="member-card"><div class="member-role">Under OG</div><div class="member-name">KENZO</div></div>
+        <div class="member-card"><div class="member-role">Under OG</div><div class="member-name">FAN</div></div>
       </div>
       <div style="margin-bottom:8px;font-size:9px;color:var(--gray);font-family:'IBM Plex Mono',monospace;letter-spacing:2px">— OP TESTER —</div>
       <div class="members-grid">
@@ -438,10 +443,9 @@ textarea{resize:vertical;min-height:80px;font-size:13px}
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithPopup,GoogleAuthProvider,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getDatabase,ref,push,onValue,serverTimestamp,query,orderByChild,limitToLast}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import{getStorage,ref as sRef,uploadBytes,getDownloadURL}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const app=initializeApp({apiKey:"AIzaSyCbkI0tVsGPokMW_vvifNbbBlUxO0Jz0Cw",authDomain:"base-6d704.firebaseapp.com",databaseURL:"https://base-6d704-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"base-6d704",storageBucket:"base-6d704.firebasestorage.app",messagingSenderId:"931844582272",appId:"1:931844582272:web:75a076baa4369ccc6daf65"});
-const auth=getAuth(app),db=getDatabase(app),storage=getStorage(app),provider=new GoogleAuthProvider();
+const auth=getAuth(app),db=getDatabase(app),provider=new GoogleAuthProvider();
 const MKEY='PBONTOPK987T';
 let CU=null,keyOK=false,musicOn=false;
 
@@ -560,15 +564,19 @@ window.uploadMedia=async input=>{
   const file=input.files[0];
   if(!file)return;
   if(!file.type.startsWith('image/')){toast('Hanya foto.','err');return;}
-  if(file.size>5*1024*1024){toast('Max 5MB.','err');return;}
+  if(file.size>2*1024*1024){toast('Max 2MB ya.','err');return;}
   const prog=g('uploadProg');prog.style.display='block';
   try{
     const name=CU.displayName||CU.email.split('@')[0];
-    const sr=sRef(storage,`pb_media/${Date.now()}_${file.name}`);
-    await uploadBytes(sr,file);
-    const url=await getDownloadURL(sr);
-    await push(ref(db,'pb_media'),{uid:CU.uid,name,photo:CU.photoURL||'',url,fileName:file.name,ts:serverTimestamp()});
-    prog.style.display='none';input.value='';toast('Foto berhasil diupload!');
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      try{
+        const base64=e.target.result;
+        await push(ref(db,'pb_media'),{uid:CU.uid,name,photo:CU.photoURL||'',url:base64,fileName:file.name,ts:serverTimestamp()});
+        prog.style.display='none';input.value='';toast('Foto berhasil diupload!');
+      }catch(err){prog.style.display='none';toast('Gagal: '+err.message,'err');}
+    };
+    reader.readAsDataURL(file);
   }catch(e){prog.style.display='none';toast('Gagal: '+e.message,'err');}
 };
 
