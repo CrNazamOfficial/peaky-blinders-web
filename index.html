@@ -22,7 +22,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 .screen{display:none;position:relative;z-index:1}
 .screen.active{display:block}
-#screen-auth{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+#screen-auth{min-height:100vh;align-items:center;justify-content:center;padding:20px}
 #screen-auth.active{display:flex}
 
 .auth-wrap{width:100%;max-width:420px;animation:authIn .7s cubic-bezier(.34,1.4,.64,1) both}
@@ -206,6 +206,7 @@ textarea{resize:vertical;min-height:80px;font-size:13px}
 
 <audio id="bgMusic" loop preload="auto">
   <source src="https://files.catbox.moe/cr0w0i.m4a" type="audio/mp4"/>
+  <source src="https://files.catbox.moe/cr0w0i.m4a" type="audio/mpeg"/>
 </audio>
 
 <div id="music-bar">
@@ -223,7 +224,7 @@ textarea{resize:vertical;min-height:80px;font-size:13px}
 </div>
 
 <!-- AUTH -->
-<div id="screen-auth" class="screen active">
+<div id="screen-auth" class="screen" style="display:none">
   <div class="auth-wrap">
     <div class="auth-logo-wrap">
       <div class="auth-pb">PEAKY<span>.</span>BLINDERS</div>
@@ -262,7 +263,7 @@ textarea{resize:vertical;min-height:80px;font-size:13px}
 </div>
 
 <!-- MAIN -->
-<div id="screen-main" class="screen">
+<div id="screen-main" class="screen" style="display:none">
   <div class="topbar">
     <div class="topbar-logo">PB<span>.</span></div>
     <div style="flex:1"></div>
@@ -287,6 +288,7 @@ textarea{resize:vertical;min-height:80px;font-size:13px}
     <div class="hero">
       <div class="hero-bg"></div>
       <div class="hero-content">
+        <img src="https://files.catbox.moe/pxu65k.jpg" alt="Sotot FiveM" style="width:90px;height:90px;object-fit:contain;margin-bottom:16px;border-radius:12px;border:2px solid rgba(192,57,43,0.4);box-shadow:0 0 30px rgba(192,57,43,0.2);animation:fadeIn .8s ease both"/>
         <div class="hero-gang">PEAKY<span>.</span><br>BLINDERS</div>
         <div class="hero-sub">SOTOT FIVEM — ROBLOX PLATFORM</div>
         <div class="hero-badges">
@@ -313,7 +315,7 @@ textarea{resize:vertical;min-height:80px;font-size:13px}
       <div class="sec-title" style="margin-top:28px"><div class="dot"></div>Foto</div>
       <div class="gallery-grid">
         <img src="https://files.catbox.moe/91fovr.jpg" alt="Gang" class="gallery-img" onclick="openLightbox(this.src)" style="animation-delay:.1s"/>
-        <img src="https://files.catbox.moe/71kqzz.jpeg" alt="Game" class="gallery-img" onclick="openLightbox(this.src)" style="animation-delay:.2s"/>
+        <img src="https://files.catbox.moe/pxu65k.jpg" alt="Game" class="gallery-img" onclick="openLightbox(this.src)" style="animation-delay:.2s"/>
       </div>
     </div>
   </div>
@@ -446,14 +448,27 @@ let CU=null,keyOK=false,musicOn=false;
 
 const audio=document.getElementById('bgMusic');
 audio.volume=0.3;
-function tryPlay(){audio.play().then(()=>{musicOn=true;document.getElementById('musicToggle').textContent='⏸';document.getElementById('music-bar').classList.add('visible');}).catch(()=>{});}
-window.toggleMusic=()=>{if(musicOn){audio.pause();musicOn=false;document.getElementById('musicToggle').textContent='▶';}else{audio.play();musicOn=true;document.getElementById('musicToggle').textContent='⏸';}};
+audio.load();
+function tryPlay(){
+  const p=audio.play();
+  if(p!==undefined){p.then(()=>{musicOn=true;document.getElementById('musicToggle').textContent='⏸';document.getElementById('music-bar').classList.add('visible');}).catch(()=>{});}
+}
+window.toggleMusic=()=>{if(musicOn){audio.pause();musicOn=false;document.getElementById('musicToggle').textContent='▶';}else{audio.play().then(()=>{musicOn=true;document.getElementById('musicToggle').textContent='⏸';});}};
+audio.addEventListener('canplaythrough',()=>{tryPlay();},{ once:true });
 window.setVol=v=>{audio.volume=parseFloat(v);};
 document.addEventListener('click',()=>tryPlay(),{once:true});
 
 onAuthStateChanged(auth,u=>{
-  if(u){CU=u;enterMain(u);}
-  else{CU=null;document.getElementById('screen-auth').classList.add('active');document.getElementById('screen-main').classList.remove('active');}
+  if(u){
+    CU=u;
+    document.getElementById('screen-auth').style.display='none';
+    document.getElementById('screen-main').style.display='block';
+    enterMain(u);
+  } else {
+    CU=null;
+    document.getElementById('screen-auth').style.display='flex';
+    document.getElementById('screen-main').style.display='none';
+  }
 });
 
 window.loginGoogle=async()=>{try{await signInWithPopup(auth,provider);toast('Berhasil masuk lewat Google!');}catch(e){toast('Gagal: '+e.message,'err');}};
@@ -498,8 +513,9 @@ window.showSec=name=>{
 };
 
 function enterMain(u){
+  document.getElementById('screen-auth').style.display='none';
   document.getElementById('screen-auth').classList.remove('active');
-  document.getElementById('screen-main').classList.add('active');
+  document.getElementById('screen-main').style.display='block';
   const name=u.displayName||u.email.split('@')[0];
   document.getElementById('tb-name').textContent=name;
   const avWrap=document.getElementById('tb-av');
